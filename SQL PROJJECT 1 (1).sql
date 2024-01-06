@@ -1,0 +1,90 @@
+CREATE DATABASE project ;
+
+USE  project ;
+
+SELECT * FROM `dataset - superstore_orders`;
+
+
+ALTER TABLE `dataset - superstore_orders`
+RENAME TO SUPERSTORE_ORDERS ;
+
+SELECT * FROM SUPERSTORE_ORDERS;
+
+-- Query 1. Data Exploration:
+
+SELECT COUNT(ORDER_ID) AS TOTAL_ORDERS FROM SUPERSTORE_ORDERS;
+
+SELECT DISTINCT(`Country/Region`) FROM SUPERSTORE_ORDERS; 
+
+-- Query 2. Customer Analysis:
+
+SELECT Customer_ID, Customer_Name , SUM(SALES) AS TotalSales FROM SUPERSTORE_ORDERS
+GROUP BY Customer_ID, Customer_Name
+ORDER BY  TotalSales  DESC 
+LIMIT 10;
+
+-- Query 3. Discount and Profit Analysis:
+
+SELECT ORDER_ID , ROUND(SUM(PROFIT),2) AS TOTAL_PROFIT  FROM SUPERSTORE_ORDERS
+WHERE DISCOUNT= '0.1' 
+GROUP BY ORDER_ID;
+
+SELECT ORDER_ID ,ROUND(AVG(PROFIT),2) AS AVG_PROFIT  FROM SUPERSTORE_ORDERS
+WHERE DISCOUNT > '0.1'
+GROUP BY  ORDER_ID ;
+
+
+-- Query 4: Geographical Analysis:
+
+SELECT CITY , STATE ,SUM(PROFIT) AS MAX_PROFIT FROM SUPERSTORE_ORDERS
+GROUP BY CITY , STATE 
+ORDER BY MAX_PROFIT DESC ;
+
+-- Query 5: Joins and Aggregation:
+
+SELECT CUSTOMER_NAME,SUM(SALES) AS TOTAL_SALES , COUNT(`Country/Region`) AS COUNTRIES   FROM SUPERSTORE_ORDERS
+GROUP BY  CUSTOMER_NAME
+HAVING  COUNTRIES > 1
+ORDER BY TOTAL_SALES DESC;
+
+-- Query 6: Window Functions:
+
+SELECT CUSTOMER_NAME , SALES,  RANK() OVER( ORDER  BY SALES DESC ) AS RANKK 
+FROM SUPERSTORE_ORDERS ;
+
+-- Query 7: Aggregation and Subquery:
+
+SELECT CATEGORY , PRODUCT_NAME, AVG(DISCOUNT) AS AVG_DISCOUNT FROM SUPERSTORE_ORDERS 
+GROUP BY CATEGORY, PRODUCT_NAME; 
+
+SELECT PRODUCT_NAME FROM SUPERSTORE_ORDERS
+WHERE DISCOUNT > (SELECT CATEGORY, PRODUCT_NAME , AVG(DISCOUNT) AS AVG_DISCOUNT FROM SUPERSTORE_ORDERS 
+GROUP BY PRODUCT_NAME ,CATEGORY) ;
+
+
+-- Query 8. Profit Performance (Filtering)
+alter table SUPERSTORE_ORDERS
+modify   order_date datetime ;
+
+SELECT YEAR , SUM(SALES) as total_sales , SUM(QUANTITY) as total_quantity, SUM(PROFIT) as total_profit
+FROM  SUPERSTORE_ORDERS
+group by YEAR;
+
+-- Query: 9: Advanced Subqueries:
+select customer_name from SUPERSTORE_ORDERS
+where sales > (select avg(sales) from SUPERSTORE_ORDERS) ;
+
+-- 0R WE CAN WRITE LIKE 
+
+select customer_name , avg(sales) as avg_sales from SUPERSTORE_ORDERS
+group by customer_name 
+having avg_sales > (select avg(sales) from SUPERSTORE_ORDERS) 
+order by  avg_sales desc ;
+
+-- Query 10: Comparison with Subquery:
+
+
+SELECT PRODUCT_NAME FROM SUPERSTORE_ORDERS
+WHERE SALES >  (SELECT MIN(SALES)  FROM SUPERSTORE_ORDERS
+WHERE CATEGORY = 'Furniture');
+
